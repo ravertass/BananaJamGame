@@ -2,6 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
 c_sfx_debug=00
+c_sfx_jump=01
 
 c_flag_solid=0
 c_flag_slope=1
@@ -12,6 +13,8 @@ c_player_spr=064
 
 c_max_dx=2
 c_ddx=0.2
+
+c_jump_dy=-2
 
 c_max_gravity=2
 c_gravity=0.2
@@ -37,6 +40,7 @@ function get_player(x,y,pl_no)
   max_dx=c_max_dx,
   max_dy=c_max_gravity,
   ddx=c_ddx,ddy=c_gravity,
+  jump_dy=c_jump_dy,
   spr=c_player_spr,
   pl_no=pl_no
  }
@@ -96,6 +100,12 @@ function has_flag(x,y,flag)
   pget(x,y)~=c_transparent_clr
 end
 
+---- level util ----
+
+function solid(x,y)
+ return level.solids[x+1][y+1]
+end
+
 ---- update ----
 
 function _update()
@@ -103,16 +113,44 @@ function _update()
 end
 
 function update_player(player)
- input(player)
  gravity(player)
+ input(player)
  move(player)
 end
 
 function input(player)
+ jump_input(player)
+ walk_input(player)
+end
+
+function jump_input(player)
+ if btnp(4) and 
+ is_on_floor(player) then
+  jump(player)
+ end
+end
+
+function jump(player)
+ player.dy=player.jump_dy
+ sfx(c_sfx_jump)
+end
+
+function is_on_floor(player)
+ x=flr(player.x)
+ y=flr(player.y)
+ return
+  solid(x,  y+8)
+  or
+  solid(x+3,y+8)
+  or
+  solid(x+7,y+8)
+end
+
+function walk_input(player)
  if btn(0,player.pl_no) then
   acc_left(player)
- elseif 
-    btn(1,player.pl_no) then
+ elseif btn(1,player.pl_no)
+ then
   acc_right(player)
  else
   dec(player)
@@ -202,7 +240,7 @@ get_wall(player,step,offs)
        flr(player.x+offs+player.dx),
        step
  do
-  if level.solids[x+1][y+1] 
+  if solid(x,y) 
   then
    return x-offs
   end
@@ -229,7 +267,7 @@ function get_floor(player)
        flr(player.y+7+
            player.dy)
  do
-  if level.solids[x+1][y+1] 
+  if solid(x,y)
   then
    return y
   end
@@ -444,7 +482,7 @@ __map__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 0001000033050320502e0502b05029050230502205022050220502105000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200001a0201f03023030250402604026040230301f0301a0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
