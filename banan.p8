@@ -11,12 +11,14 @@ c_transparent_clr=0
 
 c_player_spr=064
 
-c_max_dx=2
-c_ddx=0.2
+c_max_dx=1.2
+c_ddx=0.1
+c_run_ddx=0.1
+c_run_max_dx=2.2
 
 c_jump_dy_limit=-2
 
-c_jump_dy=-3
+c_jump_dy=-3.6
 c_jump_gravity=0.2
 
 c_max_gravity=3
@@ -41,13 +43,15 @@ function get_player(x,y,pl_no)
   x=x,y=y,
   dx=0,dy=0,
   max_dx=c_max_dx,
+  run_max_dx=c_run_max_dx,
   max_dy=c_max_gravity,
-  ddx=c_ddx,ddy=c_gravity,
+  ddx=c_ddx,run_ddx=c_run_ddx,
+  ddy=c_gravity,
   jump_dy=c_jump_dy,
   jump_ddy=c_jump_gravity,
   spr=c_player_spr,
   pl_no=pl_no,
-  from_slope=false
+  is_running=false
  }
 end
 
@@ -129,6 +133,7 @@ end
 
 function input(player)
  jump_input(player)
+ run_input(player)
  walk_input(player)
 end
 
@@ -136,6 +141,16 @@ function jump_input(player)
  if btnp(4) and 
  is_on_solid(player) then
   jump(player)
+ end
+end
+
+function run_input(player)
+ if is_on_solid(player) then
+  if btn(5) then
+   player.is_running=true
+  else
+   player.is_running=false
+  end
  end
 end
 
@@ -179,14 +194,30 @@ end
 
 function acc_left(player)
  player.dx=
-  max(player.dx-player.ddx,
-      -player.max_dx)
+  max(player.dx
+       -get_ddx(player),
+      -get_max_dx(player))
 end
 
 function acc_right(player)
  player.dx=
-  min(player.dx+player.ddx,
-      player.max_dx)
+  min(player.dx
+       +get_ddx(player),
+      get_max_dx(player))
+end
+
+function get_max_dx(player)
+ if player.is_running then
+  return player.run_max_dx
+ end
+ return player.max_dx 
+end
+
+function get_ddx(player)
+ if player.is_running then
+  return player.run_ddx
+ end
+ return player.ddx 
 end
 
 function dec(player)
@@ -214,8 +245,6 @@ function gravity(player)
 end
 
 function move(player)
- player.from_slope=
-  is_on_slope(player)
  move_x(player)
  move_y(player)
 end
