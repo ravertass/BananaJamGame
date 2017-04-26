@@ -3,6 +3,10 @@ version 8
 __lua__
 function dummy() end
 
+-- states
+c_state_menu=0
+c_state_game=1
+
 --- flags
 c_flag_walkable=0
 
@@ -46,8 +50,18 @@ c_down=4
 ---- init ----
 
 function _init()
- music(c_song_athletic)
+ init_menu()
+end
+
+function init_menu()
+ state=c_state_menu
+ music(c_song_theme)
  init_waves()
+end
+
+function init_game()
+ state=c_state_game
+ music(c_song_athletic)
  init_player()
  init_boomerang()
  birds={}
@@ -104,6 +118,22 @@ end
 ---- update ----
 
 function _update()
+ if state==c_state_menu then
+  update_menu()
+ elseif state==c_state_game 
+ then
+  update_game()
+ end
+end
+
+function update_menu()
+ update_sea()
+ if btnp(4) or btnp(5) then
+  init_game()
+ end
+end
+
+function update_game()
  update_sea()
  update_player()
  update_boomerang(boomerang)
@@ -389,6 +419,25 @@ end
 ---- draw ----
 
 function _draw()
+ cls()
+ if state==c_state_menu then
+  draw_menu()
+ elseif state==c_state_game
+ then
+  draw_game()
+ end
+end
+
+function draw_menu()
+ draw_sea()
+ print("mr. monkey's",20,20,1)
+ print("banoomerang-o-rama",
+       20,30,1)
+ print("press button",
+       40,80,0)
+end
+
+function draw_game()
  draw_sea()
  draw_map()
  draw_player()
