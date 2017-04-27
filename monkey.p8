@@ -29,6 +29,8 @@ c_song_over=-1
 c_sfx_hurt=50
 c_sfx_boomerang=51
 c_sfx_bird=52
+c_sfx_teeth=0
+c_sfx_panic=53
 
 --- misc. sprites
 c_spr_wave=072
@@ -73,11 +75,13 @@ end
 function init_game()
  state=c_state_game
  music(c_song_athletic)
+ score=0
  frame_timer=0
  sec_timer=0
  init_player()
  init_boomerang()
  birds={}
+ teeths={}
 end
 
 function init_game_over()
@@ -117,7 +121,7 @@ function init_player()
   speed=c_speed,
   walk_count=0,
   walking=false,
-  lives=3,
+  lives=5,
   invincibility=60
  }
 end
@@ -160,7 +164,7 @@ function update_game()
  update_sea()
  update_player()
  update_boomerang(boomerang)
- foreach(birds,update_bird)
+ update_enemies()
  generate_enemies()
 end
 
@@ -168,6 +172,7 @@ function update_timers()
  frame_timer=
   (frame_timer+1)%30
  if frame_timer==0 then
+  score+=10
   sec_timer+=1
  end
 end
@@ -297,6 +302,8 @@ function enemy_collisions()
  if player.invincibility==0
  then
   foreach(birds,bird_collision)
+  foreach(teeths,
+          teeth_collision)
  end
 end
 
@@ -304,6 +311,9 @@ function hurt_player()
  sfx(c_sfx_hurt)
  player.lives-=1
  player.invincibility=40
+ if player.lives==1 then
+  sfx(c_sfx_panic)
+ end
  if player.lives==0 then
   init_game_over()
  end
@@ -313,19 +323,39 @@ function bird_collision(bird)
  if intersect(
      player_rect(),
      {bird.x+1,bird.y+1,
-      bird.x+5,bird.y+6}) then
+      bird.x+5,bird.y+6}) 
+ then
+  hurt_player()
+ end
+end
+
+function teeth_collision(teeth)
+ if teeth.active and 
+ intersect(
+  player_rect(),
+  {teeth.x+1,teeth.y+2,
+   teeth.x+6,teeth.y+6}) 
+ then
   hurt_player()
  end
 end
 
 function player_rect()
  return {
-  player.x,  player.y,
-  player.x+7,player.y+9
+  player.x+1,player.y+1,
+  player.x+6,player.y+9
  }
 end
 
 function intersect(rect1,rect2)
+ return 
+  rect_in_rect(rect1,rect2)
+  or
+  rect_in_rect(rect2,rect1)
+end
+
+function 
+rect_in_rect(rect1,rect2)
  return
   point_intersect(
    rect1[1],rect1[2],rect2)
@@ -403,7 +433,7 @@ function update_boomerang(b)
   acc_boomerang(b)
   boomerang_turning_point(b)
   boomerang_follow(b)
-  move_boomerang(b)
+  move_polar(b)
   col_boomerang(b)
  end
 end
@@ -438,7 +468,7 @@ function boomerang_follow(b)
  end
 end
 
-function move_boomerang(b)
+function move_polar(b)
  dx=cos(b.dir)*b.speed
  dy=sin(b.dir)*b.speed
  b.x+=dx
@@ -467,6 +497,8 @@ function
 col_boomerang_enemies()
  foreach(birds,
   col_boomerang_bird)
+ foreach(teeths,
+  col_boomerang_teeth)
 end
 
 function 
@@ -482,18 +514,46 @@ col_boomerang_bird(bird)
  end
 end
 
+function 
+col_boomerang_teeth(teeth)
+ if not teeth.active then
+  return
+ end
+ local b=boomerang
+ rect1=get_boomerang_rect()
+ if intersect(
+     rect1,
+     {teeth.x,teeth.y,
+      teeth.x+6,teeth.y+6})
+ then
+  kill_teeth(teeth)
+ end
+end
+
 function kill_bird(bird)
  sfx(c_sfx_bird)
  del(birds,bird)
+ score+=20
+end
+
+function kill_teeth(teeth)
+ sfx(c_sfx_teeth)
+ del(teeths,teeth)
+ score+=50
 end
 
 function get_boomerang_rect()
  return {
-  boomerang.x+1,
-  boomerang.y+1,
-  boomerang.x+6,
-  boomerang.y+6,
+  boomerang.x,
+  boomerang.y,
+  boomerang.x+7,
+  boomerang.y+7,
  }
+end
+
+function update_enemies()
+ foreach(birds,update_bird)
+ foreach(teeths,update_teeth)
 end
 
 function update_bird(bird)
@@ -502,6 +562,27 @@ function update_bird(bird)
  inc_walk_count(bird)
  if is_outside(bird) then
   del(birds,bird)
+ end
+end
+
+function update_teeth(teeth)
+ if not teeth.active then
+  dig(teeth)
+  return
+ end
+ inc_walk_count(teeth)
+ 
+ norm_x=(player.x-teeth.x)/128
+ norm_y=(player.y-teeth.y)/128
+ teeth.dir=atan2(norm_x,norm_y)
+ 
+ move_polar(teeth)
+end
+
+function dig(teeth)
+ teeth.dig_count-=1
+ if teeth.dig_count==0 then
+  teeth.active=true
  end
 end
 
@@ -514,8 +595,16 @@ end
 
 function generate_enemies()
  d=get_difficulty()
- if flr(rnd(30+(d/2)))>=29 then
+ if flr(rnd(60+(d/4)))>=59 then
   add(birds,create_bird())
+ end
+ if flr(rnd(88)+
+        min(flr(d),3)+
+        (d/8)-
+        #teeths)
+    >=89
+ then
+  add(teeths,create_teeth())
  end
 end
 
@@ -532,7 +621,7 @@ function create_bird()
  main_speed=
   c_bird_base_speed
   +rnd(c_bird_xtra_speed
-       +(d/10))
+       +(d/20))
  side_speed=
   -c_bird_side_speed
   +rnd(2*c_bird_side_speed)
@@ -564,6 +653,31 @@ function create_bird()
   walk_count=0,
   dir=dirz
  }
+end
+
+function create_teeth()
+ repeat
+  celx=flr(rnd(15))
+  cely=flr(rnd(15))
+ until
+  is_cell_walkable(celx,cely)
+ d=get_difficulty()
+ return {
+  x=celx*8,
+  y=cely*8,
+  speed=0.2+min(d/15,0.8),
+  active=false,
+  dig_count=60,
+  walk_count=0,
+  dir=0.75
+ }
+end
+
+function 
+is_cell_walkable(celx,cely)
+ return 
+  fget(mget(celx,cely),
+       c_flag_walkable)
 end
 
 function update_game_over()
@@ -599,11 +713,12 @@ end
 function draw_game()
  draw_sea()
  draw_map()
+ foreach(teeths,draw_teeth)
  draw_player()
  foreach(birds,draw_bird)
  draw_boomerang()
  draw_lives()
- print(get_difficulty(),10,10,0)
+ draw_score()
 end
 
 function draw_sea()
@@ -763,6 +878,61 @@ function draw_bird(bird)
       flipz)
 end
 
+c_sprs_teeth_right={008,024}
+c_sprs_teeth_up={041,057}
+c_sprs_teeth_down={009,025}
+function draw_teeth(teeth)
+ if not teeth.active then
+  draw_crack(teeth)
+  return
+ end
+ 
+ if teeth.dir<0.125 or
+    teeth.dir>=0.875 
+ then
+  sprs=c_sprs_teeth_right
+  flipz=false
+ elseif teeth.dir>=0.125 and
+        teeth.dir<0.375 
+ then
+  sprs=c_sprs_teeth_up
+  flipz=false
+ elseif teeth.dir>=0.375 and
+        teeth.dir<0.625
+ then
+  sprs=c_sprs_teeth_right
+  flipz=true
+ elseif teeth.dir>=0.625 and
+        teeth.dir<0.875
+ then
+  sprs=c_sprs_teeth_down
+  flipz=false
+ end
+ 
+ if teeth.walk_count<
+  c_max_walk_count/2
+ then
+  sprite=sprs[1]
+ else
+  sprite=sprs[2]
+ end
+ 
+ yoffs=-flr(teeth.walk_count/2)
+ 
+ spr(sprite,
+     teeth.x,teeth.y+yoffs,
+     1,1,flipz)
+end
+
+c_spr_crack=085
+function draw_crack(crack)
+ xoffs=flr(rnd(2))-2
+ yoffs=flr(rnd(2))-2
+ spr(c_spr_crack,
+     crack.x+xoffs,
+     crack.y+yoffs)
+end
+
 function draw_boomerang()
  local b=boomerang
  if b.active then
@@ -772,16 +942,23 @@ function draw_boomerang()
  end
 end
 
-c_lives_x=54
-c_lives_y=120
-c_spr_heart=56
+c_spr_heart=056
 function draw_lives()
- x=c_lives_x
- y=c_lives_y
+ x=48
+ y=120
  for i=1,player.lives do
   spr(c_spr_heart,x,y)
   x+=7
  end
+end
+
+function draw_score()
+ x=2
+ y=2
+ print("score: "..score,
+       x,y+1,9)
+ print("score: "..score,
+       x,y,10)
 end
 
 function draw_game_over()
@@ -953,14 +1130,14 @@ __map__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-00010000310503305034050340503405032050300502a050250502205018050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0102000031054330523405232052300522a0522505222052180521805522002180050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 01140000281542815427154271542615426154251541c1541e1542115421150211542115021150211501c1501e150211502115021154211502315023150251522515225152251522515228150251502815025150
 01140000281542815427154271542615426154251541e154251542115421150211542115021150211501e15025150211502115021154211502315023150211522115221152211522115220151201521f1511f152
 011400001e1511e1521e1551e1502115023150231552315024150251502415025150241502315023150211501e1521e1521e1551e150211502315023155231501c1521c1521c1521c1521e1511e1521e1521e152
 011400001e1521e1521e1551e1502115023150231552315024150251502415025150241502315023150211501e1521e1521e1551e150211502315023155231501c1521c1521c1521c1521e1511e1522115121152
 011400001e1521e1521e1551e1502115023150231552515225142251322512225132251422515225162251721e1521e1521e1551e15021150231502315023150251501c1501c1501e1501e1501e1501c1501c150
 011400001e1521e1521e1551e1502115023150231502315025152251522515228152281522815225152251522a1522a15228152281522515225152231522315221152211521e1521e1521c1521c1521e1521e152
-011400002a0542a0522a0422a0322a0222a0322a0422a0522a0622a0722a0722a0622a0622a0522a0522a0422a0322a0222a0322a0422a0522a0622a0722a0752100221002210022100221004210022100221002
+011400002a0622a0722a0722a0622a0622a0322a0422a0522a0622a0722a0722a0622a0622a0522a0522a0422a0322a0222a0322a0422a0522a0622a0722a0752100221002210022100221004210022100221002
 01140000281542815427154271542615426154251541e154251542115421150211542115021150211501e15025150211502115021154211502315023150211522115221152211522115521150211552115021155
 011400002d105001000000002003266052660526605020032833428334273342733426334263342533425334253352810427104271042610426104251041c1042523425234262342623427234272342d2342d234
 0114000009033000003e6150903309003090333e6151501309033000003e6150903309003090333e6153e61509033000003e6150903309003090333e6151501309033000003e6150903309003090333e61500000
@@ -1006,7 +1183,7 @@ __sfx__
 010200000e7511f751261512b1512c1512c1512c1512c0512a05129051250512205120051130510c051010510a000060000400001000000000000000000000000000000000000000000000000000000000000000
 000500001a624136320b6220261500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 01030000312243a2323522232212312522f2522e2522e255000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010300003034636346303463634600000000003200033000303563635630356363563400034000340000000030366363663036636366000000000000000000003037636376303763637600000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
