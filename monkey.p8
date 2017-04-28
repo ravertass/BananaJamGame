@@ -297,35 +297,52 @@ end
 
 function move(player)
  if not 
- col_with_wall(player,
-               player.dx,
-               player.dy)
+ x_col_with_wall(player,
+                 player.dx)
  then
   player.x+=player.dx
+ end
+ if not
+ y_col_with_wall(player,
+                 player.dy)
+ then
   player.y+=player.dy
  end
 end
 
 function 
-col_with_wall(actor,dx,dy)
- if actor.dir==c_right then
+x_col_with_wall(actor,dx)
+ if dx>0 then
   x1=actor.x+7; y1=actor.y+4
-  x2=actor.x+7; y2=actor.y+10
- elseif actor.dir==c_left then
+  x2=actor.x+7; y2=actor.y+9
+ else
   x1=actor.x;   y1=actor.y+4
-  x2=actor.x;   y2=actor.y+10
- elseif actor.dir==c_up then
+  x2=actor.x;   y2=actor.y+9
+ end
+ 
+ if not 
+ is_walkable(x1+dx,y1)
+ or not
+ is_walkable(x2+dx,y2)
+ then
+  return true
+ end
+end
+
+function 
+y_col_with_wall(actor,dy)
+ if dy<=0 then
   x1=actor.x;   y1=actor.y+4
   x2=actor.x+7; y2=actor.y+4;
- elseif actor.dir==c_down then
+ else
   x1=actor.x;   y1=actor.y+9
   x2=actor.x+7; y2=actor.y+9
  end
  
  if not 
- is_walkable(x1+dx,y1+dy)
+ is_walkable(x1,y1+dy)
  or not
- is_walkable(x2+dx,y2+dy)
+ is_walkable(x2,y2+dy)
  then
   return true
  end
