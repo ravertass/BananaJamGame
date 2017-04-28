@@ -235,7 +235,7 @@ function update_timers()
  frame_timer=
   (frame_timer+1)%30
  if frame_timer==0 then
-  score+=10
+  score+=1
   sec_timer+=1
  end
 end
@@ -489,7 +489,7 @@ function grab_banana(banana)
  if player.lives<5 then
   player.lives+=1
  end
- score+=500
+ score+=50
  sfx(c_sfx_banana)
  del(bananas,banana)
 end
@@ -648,7 +648,7 @@ end
 function kill_bird(bird)
  sfx(c_sfx_bird)
  del(birds,bird)
- score+=20
+ score+=2
  create_bird_particles(bird)
 end
 
@@ -687,7 +687,7 @@ end
 function kill_teeth(teeth)
  sfx(c_sfx_teeth)
  del(teeths,teeth)
- score+=50
+ score+=5
  create_teeth_particles(teeth)
 end
 
