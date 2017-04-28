@@ -146,6 +146,7 @@ function new_wave(celx,cely)
  }
 end
 
+c_max_lives=3
 function init_player()
  player={
   x=c_start_x,
@@ -156,7 +157,7 @@ function init_player()
   speed=c_speed,
   walk_count=0,
   walking=false,
-  lives=3,
+  lives=c_max_lives,
   invincibility=60
  }
 end
@@ -485,8 +486,8 @@ function grab()
 end
 
 function grab_banana(banana)
- --todo: add banana minigame
- if player.lives<5 then
+ if player.lives<c_max_lives 
+ then
   player.lives+=1
  end
  score+=50
@@ -1484,43 +1485,43 @@ function draw_game_over()
 end
 
 function draw_worse_score()
- print("your score",44,30,9)
- print("your score",44,31,10)
+ print("your score",44,31,9)
+ print("your score",44,30,10)
  xoffs=get_score_xoffs(score)
- print(score,63+xoffs,39,9)
- print(score,63+xoffs,40,10)
+ print(score,63+xoffs,40,9)
+ print(score,63+xoffs,39,10)
  
  print("high score by "
        ..get_best_player(),
-       30,64,9)
+       30,65,9)
  print("high score by "
        ..get_best_player(),
-       30,65,10)
+       30,64,10)
  xoffs=get_score_xoffs(
        get_high_score())
  print(get_high_score(),
-       63+xoffs,73,9)
+       63+xoffs,74,9)
  print(get_high_score(),
-       63+xoffs,74,10)
+       63+xoffs,73,10)
 end
 
 function draw_new_high_score()
  print("new high score!",
-       34,30,9)
+       34,31,9)
  print("new high score!",
-       34,31,10)
+       34,30,10)
  xoffs=get_score_xoffs(score)
- print(score,63+xoffs,39,9)
- print(score,63+xoffs,40,10)
+ print(score,63+xoffs,40,9)
+ print(score,63+xoffs,39,10)
  
  print("enter your name:",
-       32,64,9)
+       32,65,9)
  print("enter your name:",
-       32,65,10)
+       32,64,10)
  print(get_name(),
-       58,73,2)
+       58,74,2)
  print(get_name(),
-       58,74,8)
+       58,73,8)
  draw_name_marker()
 end
 
