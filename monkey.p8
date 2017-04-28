@@ -1010,7 +1010,7 @@ alphabet={
  "h","i","j","k","l","m","n",
  "o","p","q","r","s","t","u",
  "v","w","x","y","z"," ","&",
- "-","_","!","?","k","0","1",
+ "-","_","!","?","$","0","1",
  "3","4","5","6","7","8","9"
 }
 
@@ -1058,8 +1058,8 @@ function draw_logo()
 end
 
 function draw_press()
- print("press",43,81,9)
- print("press",43,82,10)
+ print("press",43,82,9)
+ print("press",43,81,10)
  draw_menu_button()
  print("!",83,81,9)
  print("!",83,82,10)
