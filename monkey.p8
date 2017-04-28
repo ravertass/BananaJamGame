@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
 --mr. monkey's
---banoomerang-o-rama
+--boomerang bonanza
 --by sfabian/ravertass
 
 function dummy() end
@@ -24,6 +24,7 @@ c_clr_blue=12
 c_song_athletic=00
 c_song_theme=24
 c_song_over=16
+c_song_high_score=-1
 
 -- sound effects
 c_sfx_hurt=50
@@ -64,13 +65,25 @@ c_down=4
 ---- init ----
 
 function _init()
+ menuitem(1, 
+         "reset high score",
+         reset_high_score)
  init_menu()
 end
 
+function reset_high_score()
+ dset(1,0)
+ dset(2,0)
+ dset(3,0)
+ dset(4,0)
+end
+
+c_start_credits_x=150
 function init_menu()
  state=c_state_menu
  music(c_song_theme)
  menu_count=0
+ credits_x=c_start_credits_x
  init_waves()
 end
 
@@ -90,7 +103,19 @@ end
 
 function init_game_over()
  state=c_state_over
- music(c_song_over)
+ if score>get_high_score() then
+  letter_index=1
+  alphabet_index={}
+  alphabet_index[1]=1
+  alphabet_index[2]=1
+  alphabet_index[3]=1
+  new_high_score=true
+  music(c_song_high_score)
+  name_marker_count=0
+ else
+  new_high_score=false
+  music(c_song_over)
+ end
 end
 
 function init_waves()
@@ -160,6 +185,10 @@ function update_menu()
  update_sea()
  menu_count=
   (menu_count+1)%20
+ credits_x-=0.5
+ if credits_x<-100 then
+  credits_x=c_start_credits_x
+ end
  if btnp(4) or btnp(5) then
   init_game()
  end
@@ -804,9 +833,68 @@ end
 
 function update_game_over()
  update_sea()
- if btnp(4) or btnp(5) then
+ if new_high_score then
+  update_name_marker()
+ else
+  if btnp(4) or btnp(5) then
+   init_menu()
+  end
+ end
+end
+
+function update_name_marker()
+ name_marker_count=
+  (name_marker_count+1)%30
+ name_input()
+end
+
+function name_input()
+ if letter_index<4 and
+ (btnp(1) or btnp(4) 
+ or btnp(5))
+ then
+  letter_index=
+   min(letter_index+1,4)
+ elseif btnp(0) then
+  letter_index=
+   max(letter_index-1,0)
+ elseif btnp(2) 
+ and letter_index<4 then
+  alphabet_index[letter_index]=
+  ((alphabet_index[letter_index]
+  -2)
+   %#alphabet)+1
+ elseif btnp(3) 
+ and letter_index<4 then
+  alphabet_index[letter_index]=
+  ((alphabet_index[letter_index]
+  +2)
+   %#alphabet)-1
+ elseif (btnp(4) or btnp(5))
+ and letter_index==4 then
+  set_best_player()
+  set_high_score(score)
   init_menu()
  end
+end
+
+alphabet={
+ "a","b","c","d","e","f","g",
+ "h","i","j","k","l","m","n",
+ "o","p","q","r","s","t","u",
+ "v","w","x","y","z"," ","&",
+ "-","_","!","?","k","0","1",
+ "3","4","5","6","7","8","9"
+}
+
+function set_best_player()
+ dset(1,alphabet_index[1])
+ dset(2,alphabet_index[2])
+ dset(3,alphabet_index[3])
+end
+
+function set_high_score(score)
+ dset(4,score)
 end
 
 ---- draw ----
@@ -827,10 +915,19 @@ end
 c_spr_button=076
 function draw_menu()
  draw_sea()
+ draw_logo()
+ draw_press()
+ draw_high_score()
+ draw_credits()
+end
+
+function draw_logo()
  print("mr. monkey's",22,24,9)
  print("mr. monkey's",22,23,10)
  sspr(0,96,96,32,22,29)
- 
+end
+
+function draw_press()
  print("press",43,81,9)
  print("press",43,82,10)
  draw_menu_button()
@@ -849,6 +946,33 @@ function draw_menu_button()
  if flr(menu_count/10)==0 then
   palt(2,false)
  end
+end
+
+function draw_high_score()
+ if dget(1,0)~=0 then
+  print("high score by "
+        ..get_best_player()
+        ..": "
+        ..get_high_score(),
+        credits_x-12,2)
+ end
+end
+
+function get_best_player()
+ return 
+  alphabet[dget(1)]..
+  alphabet[dget(2)]..
+  alphabet[dget(3)]
+end
+
+function get_high_score()
+ return dget(4)
+end
+
+function draw_credits()
+ print("made by sfabian",
+       credits_x,120)
+ spr(001,credits_x+62,117,1,2)
 end
 
 function draw_game()
@@ -1165,7 +1289,86 @@ end
 
 function draw_game_over()
  draw_sea()
- print("game over",10,10,7)
+ if score<=get_high_score()
+ then
+  draw_worse_score()
+ else
+  draw_new_high_score()
+ end  
+end
+
+function draw_worse_score()
+ print("your score",44,30,9)
+ print("your score",44,31,10)
+ xoffs=get_score_xoffs(score)
+ print(score,63+xoffs,39,9)
+ print(score,63+xoffs,40,10)
+ 
+ print("high score by "
+       ..get_best_player(),
+       30,64,9)
+ print("high score by "
+       ..get_best_player(),
+       30,65,10)
+ xoffs=get_score_xoffs(
+       get_high_score())
+ print(get_high_score(),
+       63+xoffs,73,9)
+ print(get_high_score(),
+       63+xoffs,74,10)
+end
+
+function draw_new_high_score()
+ print("new high score!",
+       34,30,9)
+ print("new high score!",
+       34,31,10)
+ xoffs=get_score_xoffs(score)
+ print(score,63+xoffs,39,9)
+ print(score,63+xoffs,40,10)
+ 
+ print("enter your name:",
+       32,64,9)
+ print("enter your name:",
+       32,65,10)
+ print(get_name(),
+       58,73,2)
+ print(get_name(),
+       58,74,8)
+ draw_name_marker()
+end
+
+function get_name()
+ return
+  alphabet[alphabet_index[1]]
+ ..alphabet[alphabet_index[2]]
+ ..alphabet[alphabet_index[3]]
+end
+
+c_spr_marker=061
+c_spr_ok=060
+function draw_name_marker()
+ if name_marker_count<=10 then
+  if letter_index<4 then
+   spr(c_spr_marker,
+       53+letter_index*4,
+       73)
+  end
+ elseif letter_index==4 then
+  spr(c_spr_ok,
+      54+letter_index*4,
+      74)
+ end
+end
+
+function get_score_xoffs(score)
+ xoffs=0
+ temp_score=score
+ while temp_score>1 do
+  temp_score/=10
+  xoffs-=2
+ end
+ return xoffs
 end
 __gfx__
 000000001111411111114111111411111114111111114111111114111111411111118881118888111111e1eeee1e1111111121eeee1211111113011111111111
@@ -1192,12 +1395,12 @@ __gfx__
 11111111114fff411444441111111111111821111121111112111121111111211111111188611288111111111111111111111111111111111049491191949919
 11111111144444411444444111111111111182111111111111111111111111211111111118816881111111111111111111111111111111111104440149404994
 11111111144444411444444111111111111111111111111111111111111111111111111111888811111111111111111111111111111111111110001111111111
-11111111104444411444040111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
-111111111191119119111011111111111128111111111111111111111211111111e1811111811811111111111111111111111111111111111140111111111111
-11111111111111111111111111111111111281111111121112111121121111111e7e881118888881111111111111111111111111111111111401011111114111
-111111111111111111111111111111111111281111111211182112811821111118e8881182222228171917111119111111111111111111111401111111144011
-11111111111111111111111111111111111128111111281111822811188211111188811188222288119979111199791111111111111111111440111111444001
-11111111111111111111111111111111111281111112881111188111118822111118111128888882111991111719971111111111111111111044041141404414
+111111111044444114440401111111111111111111111111111111111111111111111111111111111111111111111111222111111eee11111111111111111111
+111111111191119119111011111111111128111111111111111111111211111111e18111118118111111111111111111212111111eee11111140111111111111
+11111111111111111111111111111111111281111111121112111121121111111e7e8811188888811111111111111111228181111eee11111401011111114111
+111111111111111111111111111111111111281111111211182112811821111118e88811822222281719171111191111118811111eee11111401111111144011
+111111111111111111111111111111111111281111112811118228111882111111888111882222881199791111997911118181111eee11111440111111444001
+111111111111111111111111111111111112811111128811111881111188221111181111288888821119911117199711111111111eee11111044041141404414
 11111111111111111111111111111111112811111228811111111111111111111111111112888821111111111111111111111111111111111104440104000440
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110001111111111
 14444411444414444411444444444111144444444111444444414444444444440100000001010000070000000707000011111111111111111111111661111111
