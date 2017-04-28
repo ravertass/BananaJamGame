@@ -857,7 +857,7 @@ function name_input()
    min(letter_index+1,4)
  elseif btnp(0) then
   letter_index=
-   max(letter_index-1,0)
+   max(letter_index-1,1)
  elseif btnp(2) 
  and letter_index<4 then
   alphabet_index[letter_index]=
@@ -867,9 +867,8 @@ function name_input()
  elseif btnp(3) 
  and letter_index<4 then
   alphabet_index[letter_index]=
-  ((alphabet_index[letter_index]
-  +2)
-   %#alphabet)-1
+  (alphabet_index[letter_index]
+   %#alphabet)+1
  elseif (btnp(4) or btnp(5))
  and letter_index==4 then
   set_best_player()
