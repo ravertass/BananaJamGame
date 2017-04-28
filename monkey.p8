@@ -99,6 +99,7 @@ function init_game()
  teeths={}
  storks={}
  bananas={}
+ particles={}
 end
 
 function init_game_over()
@@ -202,6 +203,8 @@ function update_game()
  update_enemies()
  update_storks()
  update_bananas()
+ foreach(particles,
+         update_particle)
  generate_enemies()
  generate_storks()
 end
@@ -616,12 +619,64 @@ function kill_bird(bird)
  sfx(c_sfx_bird)
  del(birds,bird)
  score+=20
+ create_bird_particles(bird)
+end
+
+c_cols_bird={7,8,9}
+function 
+create_bird_particles(bird)
+ x=bird.x+3
+ y=bird.y+3
+ dxoffs=bird.dx+
+  cos(boomerang.dir)
+  *boomerang.speed
+ dyoffs=bird.dy+
+  sin(boomerang.dir)
+  *boomerang.speed
+ for i=1,5 do
+  add(particles,
+   create_particle(x,y,
+    dxoffs,dyoffs,
+    c_cols_bird[flr(
+                rnd(3))+1]))
+ end
+end
+
+function create_particle(
+x,y,dxoffs,dyoffs,col)
+ return {
+  x=x,y=y,
+  col=col,
+  dx=rnd(2)-1+dxoffs,
+  dy=-rnd(1)+dyoffs,
+  ddy=0.1,
+  count=30
+ }
 end
 
 function kill_teeth(teeth)
  sfx(c_sfx_teeth)
  del(teeths,teeth)
  score+=50
+ create_teeth_particles(teeth)
+end
+
+c_cols_teeth={7,8,2}
+function 
+create_teeth_particles(teeth)
+ x=teeth.x+4
+ y=teeth.y+4
+ dxoffs=cos(boomerang.dir)
+  *boomerang.speed
+ dyoffs=sin(boomerang.dir)
+  *boomerang.speed
+ for i=1,5 do
+  add(particles,
+   create_particle(x,y,
+    dxoffs,dyoffs,
+    c_cols_teeth[flr(
+                 rnd(3))+1]))
+ end
 end
 
 function get_boomerang_rect()
@@ -666,6 +721,17 @@ function update_banana(banana)
  end
 end
 
+function
+update_particle(particle)
+ particle.x+=particle.dx
+ particle.y+=particle.dy
+ particle.dy+=particle.ddy
+ particle.count-=1
+ if particle.count<1 then
+  del(particles,particle)
+ end
+end
+
 function update_enemies()
  foreach(birds,update_bird)
  foreach(teeths,update_teeth)
@@ -696,9 +762,22 @@ end
 
 function dig(teeth)
  teeth.dig_count-=1
+ create_dig_particle(
+  teeth.x,teeth.y)
  if teeth.dig_count==0 then
   teeth.active=true
  end
+end
+
+c_cols_dig={4,5,0,15}
+function 
+create_dig_particle(x,y)
+ particle=
+  create_particle(x+4,y+4,0,0,
+   c_cols_dig[flr(
+              rnd(4))+1])
+ particle.count=10
+ add(particles,particle)
 end
 
 function is_outside(actor)
@@ -998,6 +1077,8 @@ function draw_game()
  foreach(bananas,draw_banana)
  draw_tree_trunk() 
  draw_player()
+ foreach(particles,
+         draw_particle)
  draw_tree()
  foreach(birds,draw_bird)
  foreach(storks,draw_stork)
@@ -1028,6 +1109,12 @@ end
 
 function draw_map()
  map(0,0,0,0,16,16)
+end
+
+function 
+draw_particle(particle)
+ circ(particle.x,particle.y,0,
+      particle.col)
 end
 
 function draw_player()
