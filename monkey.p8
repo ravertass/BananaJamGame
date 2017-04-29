@@ -1062,8 +1062,8 @@ function draw_press()
  print("press",43,82,9)
  print("press",43,81,10)
  draw_menu_button()
- print("!",83,81,9)
- print("!",83,82,10)
+ print("!",83,82,9)
+ print("!",83,81,10)
 end
 
 function draw_menu_button()
