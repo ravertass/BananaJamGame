@@ -80,6 +80,8 @@ function reset_high_score()
  dset(2,0)
  dset(3,0)
  dset(4,0)
+ dset(5,0)
+ _init()
 end
 
 c_start_credits_x=150
@@ -1023,6 +1025,7 @@ end
 
 function set_high_score(score)
  dset(4,score)
+ dset(5,1)
 end
 
 ---- draw ----
@@ -1080,7 +1083,7 @@ function draw_menu_button()
 end
 
 function draw_high_score()
- if dget(1,0)~=0 then
+ if dget(5)==1 then
   print("high score by "
         ..get_best_player()
         ..": "
