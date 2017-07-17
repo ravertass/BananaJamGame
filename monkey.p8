@@ -69,7 +69,7 @@ c_down=4
 ---- init ----
 
 function _init()
- menuitem(1, 
+ menuitem(1,
          "reset high score",
          reset_high_score)
  init_menu()
@@ -181,7 +181,7 @@ end
 function _update()
  if state==c_state_menu then
   update_menu()
- elseif state==c_state_game 
+ elseif state==c_state_game
  then
   update_game()
  elseif state==c_state_over
@@ -254,7 +254,7 @@ end
 function update_wave(wave)
  wave.x+=waves_dx
  wave.y+=waves_dy
- 
+
  if wave.x>127 then
   wave.x=0
  elseif wave.x<0 then
@@ -275,7 +275,7 @@ function update_player()
  enemy_collisions()
 end
 
-function 
+function
 update_invincibility(actor)
  if actor.invincibility>0 then
   actor.invincibility-=1
@@ -295,7 +295,7 @@ end
 
 function move_input()
  reset_movement()
- 
+
  if btn(1) then
   player.dx=player.speed
   player.dir=c_right
@@ -324,7 +324,7 @@ function reset_movement()
 end
 
 function move(player)
- if not 
+ if not
  x_col_with_wall(player,
                  player.dx)
  then
@@ -338,7 +338,7 @@ function move(player)
  end
 end
 
-function 
+function
 x_col_with_wall(actor,dx)
  if dx>0 then
   x1=actor.x+7; y1=actor.y+4
@@ -347,8 +347,8 @@ x_col_with_wall(actor,dx)
   x1=actor.x;   y1=actor.y+4
   x2=actor.x;   y2=actor.y+9
  end
- 
- if not 
+
+ if not
  is_walkable(x1+dx,y1)
  or not
  is_walkable(x2+dx,y2)
@@ -357,7 +357,7 @@ x_col_with_wall(actor,dx)
  end
 end
 
-function 
+function
 y_col_with_wall(actor,dy)
  if dy<=0 then
   x1=actor.x;   y1=actor.y+4
@@ -366,8 +366,8 @@ y_col_with_wall(actor,dy)
   x1=actor.x;   y1=actor.y+9
   x2=actor.x+7; y2=actor.y+9
  end
- 
- if not 
+
+ if not
  is_walkable(x1,y1+dy)
  or not
  is_walkable(x2,y2+dy)
@@ -417,18 +417,18 @@ function bird_collision(bird)
  if intersect(
      player_rect(),
      {bird.x+1,bird.y+1,
-      bird.x+5,bird.y+6}) 
+      bird.x+5,bird.y+6})
  then
   hurt_player()
  end
 end
 
 function teeth_collision(teeth)
- if teeth.active and 
+ if teeth.active and
  intersect(
   player_rect(),
   {teeth.x+1,teeth.y+2,
-   teeth.x+6,teeth.y+6}) 
+   teeth.x+6,teeth.y+6})
  then
   hurt_player()
  end
@@ -442,13 +442,13 @@ function player_rect()
 end
 
 function intersect(rect1,rect2)
- return 
+ return
   rect_in_rect(rect1,rect2)
   or
   rect_in_rect(rect2,rect1)
 end
 
-function 
+function
 rect_in_rect(rect1,rect2)
  return
   point_intersect(
@@ -464,13 +464,13 @@ rect_in_rect(rect1,rect2)
    rect1[3],rect1[4],rect2)
 end
 
-function 
+function
 point_intersect(x,y,rect2)
  return
   x>=rect2[1] and
   x<=rect2[3] and
   y>=rect2[2] and
-  y<=rect2[4] 
+  y<=rect2[4]
 end
 
 function grab()
@@ -488,7 +488,7 @@ function grab()
 end
 
 function grab_banana(banana)
- if player.lives<c_max_lives 
+ if player.lives<c_max_lives
  then
   player.lives+=1
  end
@@ -498,7 +498,7 @@ function grab_banana(banana)
 end
 
 function boomerang_input()
- if btnp(5) 
+ if btnp(5)
  and not boomerang.active then
   shoot_boomerang()
  end
@@ -560,7 +560,7 @@ function play_boomerang_sfx()
  if stat(18)~=c_sfx_boomerang
  then
   sfx(c_sfx_boomerang,2)
- end  
+ end
 end
 
 function acc_boomerang(b)
@@ -569,7 +569,7 @@ function acc_boomerang(b)
       c_max_boomerang_speed)
 end
 
-function 
+function
 boomerang_turning_point(b)
  if b.speed<0 then
   b.follow=true
@@ -598,7 +598,7 @@ function col_boomerang(b)
  col_boomerang_enemies()
 end
 
-function 
+function
 col_boomerang_player(b)
  x=b.x+3; y=b.y+3
  if b.follow and
@@ -619,7 +619,7 @@ col_boomerang_enemies()
   col_boomerang_teeth)
 end
 
-function 
+function
 col_boomerang_bird(bird)
  local b=boomerang
  rect1=get_boomerang_rect()
@@ -632,7 +632,7 @@ col_boomerang_bird(bird)
  end
 end
 
-function 
+function
 col_boomerang_teeth(teeth)
  if not teeth.active then
   return
@@ -656,7 +656,7 @@ function kill_bird(bird)
 end
 
 c_cols_bird={7,8,9}
-function 
+function
 create_bird_particles(bird)
  x=bird.x+3
  y=bird.y+3
@@ -695,7 +695,7 @@ function kill_teeth(teeth)
 end
 
 c_cols_teeth={7,8,2}
-function 
+function
 create_teeth_particles(teeth)
  x=teeth.x+4
  y=teeth.y+4
@@ -785,11 +785,11 @@ function update_teeth(teeth)
   return
  end
  inc_walk_count(teeth)
- 
+
  norm_x=(player.x-teeth.x)/128
  norm_y=(player.y-teeth.y)/128
  teeth.dir=atan2(norm_x,norm_y)
- 
+
  move_polar(teeth)
 end
 
@@ -803,7 +803,7 @@ function dig(teeth)
 end
 
 c_cols_dig={4,5,0,15}
-function 
+function
 create_dig_particle(x,y)
  particle=
   create_particle(x+4,y+4,0,0,
@@ -823,13 +823,13 @@ end
 function generate_storks()
  d=get_difficulty()
  if flr(rnd(1200+(d/10)))
-    >=1199 
+    >=1199
  and #bananas==0
  then
   stork=create_stork()
   banana=create_banana(stork)
   add(storks,stork)
-  add(bananas,banana) 
+  add(bananas,banana)
  end
 end
 
@@ -926,7 +926,7 @@ function create_bird()
   dx=side_speed
   dy=-main_speed
  end
- 
+
  return {
   x=x,y=y,
   dx=dx,dy=dy,
@@ -953,9 +953,9 @@ function create_teeth()
  }
 end
 
-function 
+function
 is_cell_walkable(celx,cely)
- return 
+ return
   fget(mget(celx,cely),
        c_flag_walkable)
 end
@@ -966,7 +966,7 @@ function update_game_over()
   update_name_marker()
  else
   game_over_count-=1
-  if btnp(4) or btnp(5) 
+  if btnp(4) or btnp(5)
   or game_over_count<1 then
    init_menu()
   end
@@ -981,7 +981,7 @@ end
 
 function name_input()
  if letter_index<4 and
- (btnp(1) or btnp(4) 
+ (btnp(1) or btnp(4)
  or btnp(5))
  then
   letter_index=
@@ -989,13 +989,13 @@ function name_input()
  elseif btnp(0) then
   letter_index=
    max(letter_index-1,1)
- elseif btnp(2) 
+ elseif btnp(2)
  and letter_index<4 then
   alphabet_index[letter_index]=
   ((alphabet_index[letter_index]
   -2)
    %#alphabet)+1
- elseif btnp(3) 
+ elseif btnp(3)
  and letter_index<4 then
   alphabet_index[letter_index]=
   (alphabet_index[letter_index]
@@ -1093,7 +1093,7 @@ function draw_high_score()
 end
 
 function get_best_player()
- return 
+ return
   alphabet[dget(1)]..
   alphabet[dget(2)]..
   alphabet[dget(3)]
@@ -1114,7 +1114,7 @@ function draw_death()
  draw_map()
  foreach(teeths,draw_teeth)
  foreach(bananas,draw_banana)
- draw_tree_trunk() 
+ draw_tree_trunk()
  draw_dead_player()
  foreach(particles,
          draw_particle)
@@ -1150,11 +1150,11 @@ function draw_dead_player()
   dx=-1
   flipx=true
  end
- 
+
  sspr(sxy[1],sxy[2],sw,sh,
       player.x+dx,player.y,
       sw,sh,flipx,flipy)
-      
+
 end
 
 function draw_game()
@@ -1162,7 +1162,7 @@ function draw_game()
  draw_map()
  foreach(teeths,draw_teeth)
  foreach(bananas,draw_banana)
- draw_tree_trunk() 
+ draw_tree_trunk()
  draw_player()
  foreach(particles,
          draw_particle)
@@ -1181,7 +1181,7 @@ function draw_sea()
  rectfill(0,0,127,127,
           c_clr_blue)
  foreach(waves,draw_wave)
- 
+
  set_transparency()
 end
 
@@ -1198,7 +1198,7 @@ function draw_map()
  map(0,0,0,0,16,16)
 end
 
-function 
+function
 draw_particle(particle)
  circ(particle.x,particle.y,0,
       particle.col)
@@ -1214,7 +1214,7 @@ function draw_player()
  end
  sprite=spr_info[1]
  flipz=spr_info[2]
- 
+
  draw_pl_sprite(sprite,flipz)
 end
 
@@ -1245,7 +1245,7 @@ end
 function get_pl_walk_spr_info()
  n=animation_no(player)
  flipz=n==2
- if player.dir==c_right then 
+ if player.dir==c_right then
   return {
    c_spr_pl_right_walk[n],
    false
@@ -1278,7 +1278,7 @@ function animation_no(player)
  end
 end
 
-function 
+function
 draw_pl_sprite(sprite,flipz)
  if should_blink() then
   pal(4,8)
@@ -1295,8 +1295,8 @@ end
 
 function should_blink()
  return
-  player.invincibility>0 
-  and player.walk_count%4==0 
+  player.invincibility>0
+  and player.walk_count%4==0
 end
 
 c_spr_tree_1=132
@@ -1336,7 +1336,7 @@ function draw_bird(bird)
   flipz=false
   sw=9
  end
- 
+
  if bird.walk_count<
   c_max_walk_count/2
  then
@@ -1344,10 +1344,10 @@ function draw_bird(bird)
  else
   sprite=sprs[2]
  end
- 
+
  sx=(sprite%16)*8
  sy=flr(sprite/16)*8
- 
+
  sspr(sx,sy,sw,8,
       bird.x,bird.y,sw,8,
       flipz)
@@ -1361,7 +1361,7 @@ function draw_stork(stork)
  elseif stork.dir==c_left then
   flipz=true
  end
- 
+
  if stork.walk_count<
   c_max_walk_count/2
  then
@@ -1369,10 +1369,10 @@ function draw_stork(stork)
  else
   sprite=sprs[2]
  end
- 
+
  yoffs=
   -flr(stork.walk_count/4)*2
- 
+
  spr(sprite,
      stork.x,stork.y+yoffs,
      2,2,
@@ -1382,14 +1382,14 @@ end
 c_spr_banana=030
 function draw_banana(banana)
  sprite=c_spr_banana
- 
+
  if banana.flying then
   yoffs=
    -flr(banana.walk_count/4)*2
  else
   yoffs=0
  end
- 
+
  spr(sprite,
      banana.x,banana.y)
 end
@@ -1402,14 +1402,14 @@ function draw_teeth(teeth)
   draw_crack(teeth)
   return
  end
- 
+
  if teeth.dir<0.125 or
-    teeth.dir>=0.875 
+    teeth.dir>=0.875
  then
   sprs=c_sprs_teeth_right
   flipz=false
  elseif teeth.dir>=0.125 and
-        teeth.dir<0.375 
+        teeth.dir<0.375
  then
   sprs=c_sprs_teeth_up
   flipz=false
@@ -1424,7 +1424,7 @@ function draw_teeth(teeth)
   sprs=c_sprs_teeth_down
   flipz=false
  end
- 
+
  if teeth.walk_count<
   c_max_walk_count/2
  then
@@ -1432,9 +1432,9 @@ function draw_teeth(teeth)
  else
   sprite=sprs[2]
  end
- 
+
  yoffs=-flr(teeth.walk_count/2)
- 
+
  spr(sprite,
      teeth.x,teeth.y+yoffs,
      1,1,flipz)
@@ -1484,7 +1484,7 @@ function draw_game_over()
   draw_worse_score()
  else
   draw_new_high_score()
- end  
+ end
 end
 
 function draw_worse_score()
@@ -1493,7 +1493,7 @@ function draw_worse_score()
  xoffs=get_score_xoffs(score)
  print(score,63+xoffs,40,9)
  print(score,63+xoffs,39,10)
- 
+
  print("high score by "
        ..get_best_player(),
        30,65,9)
@@ -1516,7 +1516,7 @@ function draw_new_high_score()
  xoffs=get_score_xoffs(score)
  print(score,63+xoffs,40,9)
  print(score,63+xoffs,39,10)
- 
+
  print("enter your name:",
        32,65,9)
  print("enter your name:",
